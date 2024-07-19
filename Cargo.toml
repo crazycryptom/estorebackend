@@ -1,0 +1,9 @@
+[package]
+name = "estorebackend"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+diesel = { version = "1.4", features = ["postgres"]}
+postgres = "0.19"
+dotenv = "0.15"
