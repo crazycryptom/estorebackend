@@ -8,23 +8,15 @@ generator client {
     output = "../src/prisma.rs"
 }
 
-model SomeModel {
-    id  String @id
-    some_column Json?
-    some_enum SomeEnum
-    some_enum_optional SomeEnum?
-    enum_list SomeEnum[]
+model User {
+    id String @id @default(uuid())
+    displayName String
+    posts Post[]
 }
 
-model AnotherModel {
-    id String @id
-    string_array String[]
-    another_array String[]
-
-    json Json
-}
-
-enum SomeEnum {
-    A
-    B
+model Post {
+    id String @id @default(uuid())
+    content String
+    user User @relation(fields: [userId], references: [id])
+    userId String
 }
