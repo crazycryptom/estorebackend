@@ -3,10 +3,13 @@ name = "estorebackend"
 version = "0.1.0"
 edition = "2021"
 
-[alias]
-prisma = "run -p prisma-cli"
+[workspace]
+members = [
+  "prisma-cli",      
+]
 
 [dependencies]
+tokio = { version = "1.17.0" }
 prisma-client-rust = { git = "https://github.com/Brendonovich/prisma-client-rust", tag = "0.6.11" }
 prisma-client-rust-cli = { git = "https://github.com/Brendonovich/prisma-client-rust", tag = "0.6.11" }
 postgres = "0.19"

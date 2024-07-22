@@ -1,14 +1,11 @@
 datasource db {
     provider = "postgresql"
-    url = env("DATABASE_URL)
+    url = env("DATABASE_URL")
 }
 
 generator client {
     provider = "cargo prisma"
-    output = "../tests/db"
-
-    module_path = "crate::db"
-    clientFormat = "directory"
+    output = "../src/prisma.rs"
 }
 
 model SomeModel {
