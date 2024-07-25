@@ -9,6 +9,9 @@ members = [
 ]
 
 [dependencies]
+uuid = "1.0"
+bcrypt = "0.12"
+jsonwebtoken = "8.0"
 tokio = { version = "1.17.0" }
 prisma-client-rust = { git = "https://github.com/Brendonovich/prisma-client-rust", tag = "0.6.11" }
 prisma-client-rust-cli = { git = "https://github.com/Brendonovich/prisma-client-rust", tag = "0.6.11" }
