@@ -8,9 +8,14 @@ generator client {
   output   = "../src/prisma.rs"
 }
 
+enum RoleType {
+  client
+  admin
+}
+
 model Role {
-  id   String @id @default(uuid())
-  role String
+  id   String   @id @default(uuid())
+  role RoleType
   User User[]
 }
 
