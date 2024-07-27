@@ -13,12 +13,6 @@ enum RoleType {
   admin
 }
 
-model Role {
-  id   String   @id @default(uuid())
-  role RoleType
-  User User[]
-}
-
 model User {
   id          String    @id @default(uuid())
   displayName String
@@ -26,8 +20,7 @@ model User {
   lastName    String
   email       String    @unique
   password    String
-  role        Role      @relation(fields: [roleId], references: [id])
-  roleId      String
+  role        RoleType
   comments    Comment[]
   orders      Order[]
   reviews     Review[]
