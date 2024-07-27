@@ -1243,6 +1243,7 @@ version = "0.1.0"
 dependencies = [
  "actix-web",
  "bcrypt",
+ "chrono",
  "dotenv",
  "env_logger",
  "jsonwebtoken",

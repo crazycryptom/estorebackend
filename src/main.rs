@@ -5,6 +5,7 @@ use std::sync::Arc;
 
 use prisma::*;
 
+use log::{info, warn, error, debug};
 use actix_web::{get, web, App, HttpServer, HttpResponse, Responder};
 
 #[get("/")]
@@ -14,14 +15,13 @@ async fn hello() -> impl Responder {
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    env_logger::init_from_env(Env::default().default_filter_or("info"));    
 
     info!("This is an info message");
     warn!("This is a warning message");
     error!("This is an error message");
     debug!("This is a debug message");
 
-    
+
     let prisma_client = PrismaClient::_builder().build().await.unwrap();
     let prisma_client = Arc::new(prisma_client);
     HttpServer::new(move || {
