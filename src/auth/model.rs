@@ -46,3 +46,15 @@ pub struct UpdateProfile {
     pub firstname: String,
     pub lastname: String,
 }
+
+#[derive(Deserialize)]
+pub struct GetRecoveryKeyPayload {
+    pub email: String,
+}
+
+#[derive(Deserialize)]
+pub struct ResetPasswordPayload {
+    pub recoverykey: String,
+    pub email: String,
+    pub newpassword: String,
+}

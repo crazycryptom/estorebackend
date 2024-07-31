@@ -1,22 +1,13 @@
-use actix_web::dev::ServiceRequest;
-use actix_web::web::Payload;
+use actix_web::dev::Payload;
 use actix_web::{web, HttpMessage, HttpRequest, HttpResponse, Responder};
 use serde_json::json;
 use crate::prisma::PrismaClient;
 use crate::prisma::*;
-use crate::auth::model::{RegisterUser, UserResponse, LoginUser,Passwords, Claims, UpdateProfile};
-use super::utils::{get_secret_key};
+use crate::auth::model::{RegisterUser, UserResponse, LoginUser,Passwords, Claims, UpdateProfile, GetRecoveryKeyPayload, ResetPasswordPayload};
+use super::utils::get_secret_key;
 use bcrypt::{hash, verify, DEFAULT_COST};
 use jsonwebtoken::{encode, Header, EncodingKey};
 use std::sync::Arc;
-
-
-async fn validate_token(token: &str, stored_hashed_token: &str) -> bool {
-    match verify(token, stored_hashed_token) {
-        Ok(valid) => valid,
-        Err(_) => false,
-    }
-}
 
 pub async fn register_user(
     user: web::Json<RegisterUser>,
@@ -196,5 +187,73 @@ pub async fn update_profile(
         }
     } else {
         HttpResponse::Unauthorized().json(json!({"error": "Unauthorized"}))
+    }
+}
+
+pub async fn recovery_key (
+    req: HttpRequest,
+    payload: web::Json<GetRecoveryKeyPayload>,
+    prisma_client: web::Data<Arc<PrismaClient>>,
+) -> impl Responder {
+    let recoverykey = "123456".to_string();
+    if let Some(claims) = req.extensions().get::<Claims>() {
+        match prisma_client
+            .user()
+            .find_unique(user::id::equals(claims.sub.clone()))
+            .exec()
+            .await
+        {
+            Ok(Some(user)) => {
+                match prisma_client.user().update(
+                    user::email::equals(payload.email.clone()),
+                    vec![user::key::set(Some(recoverykey))]
+                )
+                .exec()
+                .await
+                {
+                    Ok(updated_user) => return HttpResponse::Ok().json(json!({"recoveryKey": updated_user.key})),
+                    Err(_) => HttpResponse::BadRequest().json(json!({"error": "Invalid email"}))
+                }
+            },
+            Ok(None) => HttpResponse::BadRequest().json(json!({"error": "Invalid input data"})),
+            Err(_) => HttpResponse::InternalServerError().json(json!({"error": "Database error"})),
+        }
+
+    } else {
+        HttpResponse::Unauthorized().json(json!({"error": "Unauthorized"}))
+    }
+}
+
+pub async fn reset_password (
+    payload: web::Json<ResetPasswordPayload>,
+    prisma_client: web::Data<Arc<PrismaClient>>
+) -> impl Responder {
+    match prisma_client
+        .user()
+        .find_first(vec![
+            user::key::equals(Some(payload.recoverykey.clone())),
+            user::email::equals(payload.email.clone())
+            ])
+        .exec()
+        .await
+    {
+        Ok(Some(user)) => {
+            let hashed_password = match hash(payload.newpassword.clone(), DEFAULT_COST) {
+                Ok(p) => p,
+                Err(_) => return HttpResponse::InternalServerError().json(json!({"error": "Failed to hash password"})),
+            };
+            match prisma_client.user().update(
+                user::email::equals(payload.email.clone()),
+                vec![user::password::set(hashed_password.clone())]
+            )
+            .exec()
+            .await
+            {
+                Ok(updated_user) => HttpResponse::Ok().json(json!({"message": "Password reset successfully"})),
+                Err(_) => HttpResponse::BadRequest().json(json!({"error": "Invalid input data"}))
+            }
+        },
+        Ok(None) => HttpResponse::BadRequest().json(json!({"error": "Invalid input data"})),
+        Err(_) => HttpResponse::InternalServerError().json(json!({"error": "Database error"})),
     }
 }
