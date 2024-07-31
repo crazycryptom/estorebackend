@@ -4,7 +4,7 @@ use actix_web::{web, HttpMessage, HttpRequest, HttpResponse, Responder};
 use serde_json::json;
 use crate::prisma::PrismaClient;
 use crate::prisma::*;
-use crate::auth::model::{RegisterUser, UserResponse, LoginUser,Passwords, Claims};
+use crate::auth::model::{RegisterUser, UserResponse, LoginUser,Passwords, Claims, UpdateProfile};
 use super::utils::{get_secret_key};
 use bcrypt::{hash, verify, DEFAULT_COST};
 use jsonwebtoken::{encode, Header, EncodingKey};
@@ -148,4 +148,53 @@ pub async fn change_pass (
         }
     }
     return HttpResponse::Ok().json(json!({"oldpassword": passwords.oldpassword, "newPassword": passwords.newpassword }));
+}
+
+pub async fn update_profile(
+    req: HttpRequest,
+    newprofile: web::Json<UpdateProfile>,
+    prisma_client: web::Data<Arc<PrismaClient>>,
+) -> impl Responder {
+    if let Some(claims) = req.extensions().get::<Claims>() {
+        match prisma_client
+            .user()
+            .find_unique(user::id::equals(claims.sub.clone()))
+            .exec()
+            .await
+        {
+            Ok(Some(user)) => {
+                match prisma_client
+                    .user()
+                    .update(
+                        user::id::equals(claims.sub.clone()),
+                        vec![
+                            user::display_name::set(newprofile.username.clone()),
+                            user::first_name::set(newprofile.firstname.clone()),
+                            user::last_name::set(newprofile.lastname.clone()),
+                            user::email::set(newprofile.email.clone()),
+                        ],
+                    )
+                    .exec()
+                    .await
+                {
+                    Ok(updated_user) => HttpResponse::Ok().json(UserResponse {
+                        id: updated_user.id,
+                        username: updated_user.display_name,
+                        email: updated_user.email,
+                        first_name: updated_user.first_name,
+                        last_name: updated_user.last_name,
+                        role: match updated_user.role {
+                            RoleType::Admin => String::from("admin"),
+                            _ => String::from("client"),
+                        },
+                    }),
+                    Err(_) => HttpResponse::BadRequest().json(json!({"error": "Invalid input data"})),
+                }
+            }
+            Ok(None) => HttpResponse::BadRequest().json(json!({"error": "Invalid input data"})),
+            Err(_) => HttpResponse::InternalServerError().json(json!({"error": "Database error"})),
+        }
+    } else {
+        HttpResponse::Unauthorized().json(json!({"error": "Unauthorized"}))
+    }
 }

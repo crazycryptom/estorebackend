@@ -1,5 +1,5 @@
 use actix_web::web;
-use crate::auth::handler::{register_user, login_user, change_pass};
+use crate::auth::handler::{register_user, login_user, change_pass, update_profile};
 use super::utils::Authentication;
 
 pub fn init_routes(cfg: &mut web::ServiceConfig) {
@@ -15,5 +15,10 @@ pub fn init_routes(cfg: &mut web::ServiceConfig) {
         web::resource("/password-change")
         .wrap(Authentication)
         .route(web::put().to(change_pass))
+    );
+    cfg.service(
+        web::resource("/update-profile")
+        .wrap(Authentication)
+        .route(web::put().to(update_profile))
     );
 }

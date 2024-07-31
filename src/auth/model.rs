@@ -37,3 +37,12 @@ pub struct Passwords {
     pub oldpassword: String,
     pub newpassword: String,
 }
+
+#[derive(Deserialize)]
+
+pub struct UpdateProfile {
+    pub username: String,
+    pub email: String,
+    pub firstname: String,
+    pub lastname: String,
+}
