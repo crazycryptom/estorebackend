@@ -28,7 +28,10 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .service(hello)
             .app_data(web::Data::new(Arc::clone(&prisma_client)))
-            .configure(auth::routes::init_routes)
+            .service(
+                web::scope("/api/auth")
+                .configure(auth::routes::init_routes)
+            )
     })
     .bind("127.0.0.1:8080")?
     .run()

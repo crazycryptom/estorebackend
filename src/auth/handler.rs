@@ -1,20 +1,21 @@
-use actix_web::{web, Responder, HttpResponse};
+use actix_web::dev::ServiceRequest;
+use actix_web::web::Payload;
+use actix_web::{web, HttpMessage, HttpRequest, HttpResponse, Responder};
 use serde_json::json;
 use crate::prisma::PrismaClient;
 use crate::prisma::*;
-use crate::auth::model::{RegisterUser, UserResponse, LoginUser, JWTResponse, Claims};
+use crate::auth::model::{RegisterUser, UserResponse, LoginUser,Passwords, Claims};
+use super::utils::{get_secret_key};
 use bcrypt::{hash, verify, DEFAULT_COST};
 use jsonwebtoken::{encode, Header, EncodingKey};
 use std::sync::Arc;
-use dotenv::dotenv;
-use std::env;
-use chrono::Utc;
 
-fn get_secret_key() -> Vec<u8> {
-    dotenv().ok();
-    env::var("JWT_SECRET")
-        .expect("SECRET_KEY must be set")
-        .into_bytes()
+
+async fn validate_token(token: &str, stored_hashed_token: &str) -> bool {
+    match verify(token, stored_hashed_token) {
+        Ok(valid) => valid,
+        Err(_) => false,
+    }
 }
 
 pub async fn register_user(
@@ -56,6 +57,10 @@ pub async fn register_user(
                         email: new_user.email,
                         first_name: new_user.first_name,
                         last_name: new_user.last_name,
+                        role: match new_user.role {
+                            RoleType::Admin => String::from("admin"),
+                            _ => String::from("client"),
+                        },
                     });
                 }
                 Err(err) => {
@@ -77,39 +82,70 @@ pub async fn login_user(
         user::email::equals(user.email.clone())
     ).exec().await {
         Ok(Some(user_record)) => {
-            if let Ok(valid) = verify(&user.password, &user_record.password) {
-                if valid {
-                    let exp = chrono::Utc::now()
-                        .checked_add_signed(chrono::Duration::days(1))
-                        .expect("valid timestamp")
-                        .timestamp() as usize;
-
-                    let claims = Claims {
-                        sub: user_record.id.clone(),
-                        exp,
-                    };
-
-                    let secret = get_secret_key();
-                    let token = match encode(&Header::default(), &claims, &EncodingKey::from_secret(&secret)) {
-                        Ok(t) => t,
-                        Err(_) => return HttpResponse::InternalServerError().json(json!({"error": "Failed to generate token"})),
-                    };
-
-                    return HttpResponse::Ok().json(json!({
-                        "token": token,
-                        "user": UserResponse {
-                            id: user_record.id,
-                            username: user_record.display_name,
-                            email: user_record.email,
-                            first_name: user_record.first_name,
-                            last_name: user_record.last_name,
-                        }
-                    }));
+            println!("user record is {} and password is {}",user_record.password, user.password);
+            match verify(user.password.clone(), &user_record.password) {
+                Ok(valid) => {
+                    if valid {
+                        let exp = chrono::Utc::now()
+                            .checked_add_signed(chrono::Duration::days(1))
+                            .expect("valid timestamp")
+                            .timestamp() as usize;
+    
+                        let claims = Claims {
+                            sub: user_record.id.clone(),
+                            exp,
+                        };
+    
+                        let secret = get_secret_key();
+                        let token = match encode(&Header::default(), &claims, &EncodingKey::from_secret(secret.as_bytes())) {
+                            Ok(t) => t,
+                            Err(_) => return HttpResponse::InternalServerError().json(json!({"error": "Failed to generate token"})),
+                        };
+    
+                        return HttpResponse::Ok().json(json!({
+                            "token": token,
+                            "user": UserResponse {
+                                id: user_record.id,
+                                username: user_record.display_name,
+                                email: user_record.email,
+                                first_name: user_record.first_name,
+                                last_name: user_record.last_name,
+                                role: match user_record.role {
+                                    RoleType::Admin => String::from("admin"),
+                                    _ => String::from("client"),
+                                },
+                            }
+                        }));
+                    } else {
+                        return HttpResponse::Unauthorized().json(json!({"error": "Invalid credentials"}));
+                    }
+                }
+                Err(_) => {
+                    // Log this error for debugging purposes
+                    return HttpResponse::InternalServerError().json(json!({"error": "invalid email or password"}));
                 }
             }
-            HttpResponse::Unauthorized().json(json!({"error": "Invalid credentials"}))
         }
         Ok(None) => HttpResponse::Unauthorized().json(json!({"error": "Invalid credentials"})),
         Err(err) => HttpResponse::InternalServerError().json(json!({"error": format!("Failed to query user: {}", err)})),
     }
+}
+
+pub async fn change_pass (
+    req: actix_web::HttpRequest,
+    passwords: web::Json<Passwords>,
+    prisma_client: web::Data<Arc<PrismaClient>>
+) -> impl Responder {
+    if let Some(claims) = req.extensions().get::<Claims>() {
+        match prisma_client.user().update(
+            user::id::equals(claims.sub.clone()),
+            vec![user::password::set(passwords.newpassword.clone())]
+        )
+        .exec()
+        .await {
+            Ok(_) => return HttpResponse::Ok().json("password is updated successfully"),
+            Err(_) => return HttpResponse::NotFound().json("Didn't find user"),
+        }
+    }
+    return HttpResponse::Ok().json(json!({"oldpassword": passwords.oldpassword, "newPassword": passwords.newpassword }));
 }

@@ -17,6 +17,7 @@ pub struct UserResponse {
     pub email: String,
     pub first_name: String,
     pub last_name: String,
+    pub role: String,
 }
 
 #[derive(Deserialize)]
@@ -25,13 +26,14 @@ pub struct LoginUser {
     pub password: String,
 }
 
-#[derive(Serialize)]
-pub struct JWTResponse {
-    pub token: String,
-}
-
 #[derive(Serialize, Deserialize)]
 pub struct Claims {
     pub sub: String,
     pub exp: usize,
+}
+
+#[derive(Deserialize)]
+pub struct Passwords {
+    pub oldpassword: String,
+    pub newpassword: String,
 }
