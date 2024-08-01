@@ -2,7 +2,6 @@ use std::{
     future::{ready, Ready},
     rc::Rc,
 };
- 
 use actix_web::{
     body::EitherBody,
     dev::{forward_ready, Service, ServiceRequest, ServiceResponse, Transform},

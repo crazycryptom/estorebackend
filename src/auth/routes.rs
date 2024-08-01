@@ -1,5 +1,5 @@
 use actix_web::web;
-use super::handler::{register_user, login_user, change_pass, update_profile, recovery_key, reset_password};
+use super::handler::*;
 use crate::utils::Authentication;
 
 pub fn auth_routes(cfg: &mut web::ServiceConfig) {
