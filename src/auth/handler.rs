@@ -1,10 +1,9 @@
-use actix_web::dev::Payload;
 use actix_web::{web, HttpMessage, HttpRequest, HttpResponse, Responder};
 use serde_json::json;
 use crate::prisma::PrismaClient;
 use crate::prisma::*;
 use crate::auth::model::{RegisterUser, UserResponse, LoginUser,Passwords, Claims, UpdateProfile, GetRecoveryKeyPayload, ResetPasswordPayload};
-use super::utils::get_secret_key;
+use crate::utils::get_secret_key;
 use bcrypt::{hash, verify, DEFAULT_COST};
 use jsonwebtoken::{encode, Header, EncodingKey};
 use std::sync::Arc;

@@ -1,8 +1,8 @@
 use actix_web::web;
-use crate::auth::handler::{register_user, login_user, change_pass, update_profile, recovery_key, reset_password};
-use super::utils::Authentication;
+use super::handler::{register_user, login_user, change_pass, update_profile, recovery_key, reset_password};
+use crate::utils::Authentication;
 
-pub fn init_routes(cfg: &mut web::ServiceConfig) {
+pub fn auth_routes(cfg: &mut web::ServiceConfig) {
     cfg.service(
         web::resource("/register")
             .route(web::post().to(register_user))

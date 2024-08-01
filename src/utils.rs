@@ -14,7 +14,7 @@ use futures_util::{future::LocalBoxFuture};
 use dotenv::dotenv;
 use std::env;
 use jsonwebtoken::{decode, DecodingKey, TokenData, Validation, Algorithm, errors::ErrorKind};
-use super::model::Claims;
+use super::auth::model::Claims;
 
 pub fn get_secret_key() -> String {
     dotenv().ok();

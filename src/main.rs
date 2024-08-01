@@ -1,8 +1,9 @@
 mod auth;
+mod admin;
 mod prisma;
+mod utils;
 
 use std::sync::Arc; 
-
 use prisma::*;
 
 use log::{info, warn, error, debug};
@@ -30,7 +31,11 @@ async fn main() -> std::io::Result<()> {
             .app_data(web::Data::new(Arc::clone(&prisma_client)))
             .service(
                 web::scope("/api/auth")
-                .configure(auth::routes::init_routes)
+                .configure(auth::routes::auth_routes)
+            )
+            .service(
+                web::scope("api/admin")
+                .configure(admin::routes::admin_routes)
             )
     })
     .bind("127.0.0.1:8080")?
