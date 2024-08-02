@@ -7,7 +7,15 @@ pub fn admin_routes(cfg: &mut web::ServiceConfig) {
         .route(web::get().to(get_users))
     );
     cfg.service(
-        web::resource("/users")
+        web::resource("/users/{user_id}")
         .route(web::put().to(update_user_role))
+    );
+    cfg.service(
+        web::resource("/users/{user_id}")
+        .route(web::delete().to(delete_user))
+    );
+    cfg.service(
+        web::resource("/products")
+        .route(web::post().to(create_product))
     );
 }

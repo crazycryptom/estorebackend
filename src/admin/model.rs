@@ -10,7 +10,28 @@ pub struct PaginationQuery {
 }
 #[derive(Deserialize)]
 pub struct RolePayload {
-    role: String,
+    pub role: String,
+}
+
+#[derive(Deserialize)]
+pub struct ProductPayload {
+    pub name: String,
+    pub description: String,
+    pub price: f64,
+    pub stock: i32,
+    pub category: Vec<String>,
+    pub imageurl: String,
+}
+
+#[derive(Serialize)]
+pub struct ProductResponse {
+    pub id: String,
+    pub name: String,
+    pub description: String,
+    pub price: f64,
+    pub stock: i32,
+    pub category: Vec<String>,
+    pub imageurl: String,
 }
 
 fn default_page() -> Option<i64> {
