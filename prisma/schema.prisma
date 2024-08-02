@@ -53,11 +53,12 @@ model Product {
   description      String
   price            Float
   stock            Int
+  imageUrl         String
   categories       Category[]         @relation("CategoryProducts")
   reviews          Review[]
   createdAt        DateTime           @default(now())
   updatedAt        DateTime           @updatedAt
-  OrderItem        OrderItem[]
+  orderItems       OrderItem[]
   CategoryProducts CategoryProducts[]
 }
 
