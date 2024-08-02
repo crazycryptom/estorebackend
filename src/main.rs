@@ -8,6 +8,7 @@ use prisma::*;
 
 use log::{info, warn, error, debug};
 use actix_web::{get, web, App, HttpServer, HttpResponse, Responder};
+use utils::Authentication;
 
 #[get("/")]
 async fn hello() -> impl Responder {
@@ -35,6 +36,8 @@ async fn main() -> std::io::Result<()> {
             )
             .service(
                 web::scope("api/admin")
+                .wrap(Authentication)
+                // .wrap(Authorization)
                 .configure(admin::routes::admin_routes)
             )
     })

@@ -1,8 +1,8 @@
-use actix_web::{web, HttpMessage, HttpRequest, HttpResponse, Responder};
+use actix_web::{dev::Response, web::{self, Json}, HttpMessage, HttpRequest, HttpResponse, Responder};
 use serde_json::json;
-use crate::{prisma::{user, PrismaClient}, RoleType}; // Adjust based on your actual imports
-use std::sync::Arc;
-use crate::auth::model::Claims;
+use crate::{prisma::{self, user, PrismaClient}, RoleType}; // Adjust based on your actual imports
+use std::{any::Any, sync::Arc};
+use crate::auth::model::{ Claims, UserResponse };
 use super::model::*;
 
 pub async fn get_users(
@@ -83,6 +83,48 @@ pub async fn get_users(
         }
     } else {
         println!("the app passed here");
+        HttpResponse::Unauthorized().json(json!({"error": "Unauthorized."}))
+    }
+}
+
+pub async fn update_user_role(
+    req: HttpRequest,
+    prisma_client: web::Data<Arc<PrismaClient>>,
+    user_id: web::Path<String>,
+    payload: web::Json<RolePayload>,
+) -> impl Responder {
+    if let Some(claims) = req.extensions().get::<Claims>() {
+        if claims.is_admin {
+            let updated_user = prisma_client.user().find_unique(
+                user::id::equals(user_id.clone())
+            ).exec().await;
+
+            match updated_user {
+                Ok(Some(user)) => {
+                    let response = UserResponse {
+                        id: user.id,
+                        username: user.display_name,
+                        email: user.email,
+                        first_name: user.first_name,
+                        last_name: user.last_name,
+                        role: match user.role {
+                            RoleType::Admin => String::from("admin"),
+                            _ => String::from("client"),
+                        },
+                    };
+                    HttpResponse::Ok().json(response)
+                },
+                Ok(None) => {
+                    HttpResponse::NotFound().json(json!({"error": "User not found"}))
+                },
+                Err(_) => {
+                    HttpResponse::InternalServerError().json(json!({"error": "database error"}))
+                }
+            }
+        } else {
+            HttpResponse::Unauthorized().json(json!({"error": "Unauthorized."}))
+        }
+    } else {
         HttpResponse::Unauthorized().json(json!({"error": "Unauthorized."}))
     }
 }

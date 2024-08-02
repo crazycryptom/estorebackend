@@ -26,10 +26,11 @@ pub struct LoginUser {
     pub password: String,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct Claims {
     pub sub: String,
     pub exp: usize,
+    pub is_admin: bool,
 }
 
 #[derive(Deserialize)]

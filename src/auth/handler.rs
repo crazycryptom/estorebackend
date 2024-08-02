@@ -84,6 +84,7 @@ pub async fn login_user(
                         let claims = Claims {
                             sub: user_record.id.clone(),
                             exp,
+                            is_admin: user_record.role == RoleType::Admin,
                         };
     
                         let secret = get_secret_key();

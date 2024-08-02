@@ -8,6 +8,10 @@ pub struct PaginationQuery {
     pub limit: Option<i64>,
     pub search: Option<String>,
 }
+#[derive(Deserialize)]
+pub struct RolePayload {
+    role: String,
+}
 
 fn default_page() -> Option<i64> {
     Some(1)
