@@ -12,7 +12,6 @@ pub async fn register_user(
     user: web::Json<RegisterUser>,
     prisma_client: web::Data<Arc<PrismaClient>>
 ) -> impl Responder {
-    // Check if the user already exists
     match prisma_client.user().find_unique(
         user::email::equals(user.email.clone())
     ).exec().await {
@@ -24,7 +23,7 @@ pub async fn register_user(
                 Ok(p) => p,
                 Err(_) => return HttpResponse::InternalServerError().json(json!({"error": "Failed to hash password"})),
             };
-            // Proceed to create a new user
+
             let role_type = match user.role.as_str() {
                 "admin" => RoleType::Admin,
                 _ => RoleType::Client,
@@ -40,7 +39,6 @@ pub async fn register_user(
                 vec![],
             ).exec().await {
                 Ok(new_user) => {
-                    // Return the created user
                     return HttpResponse::Created().json(UserResponse {
                         id: new_user.id,
                         username: new_user.display_name,
@@ -112,7 +110,6 @@ pub async fn login_user(
                     }
                 }
                 Err(_) => {
-                    // Log this error for debugging purposes
                     return HttpResponse::InternalServerError().json(json!({"error": "invalid email or password"}));
                 }
             }
