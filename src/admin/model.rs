@@ -34,6 +34,19 @@ pub struct ProductResponse {
     pub imageurl: String,
 }
 
+#[derive(Deserialize)]
+pub struct CategoryPayload{
+    pub name: String,
+    pub description: String,
+}
+
+#[derive(Serialize)]
+pub struct CategoryResponse {
+    pub id: String,
+    pub name: String,
+    pub description: String,
+}
+
 fn default_page() -> Option<i64> {
     Some(1)
 }

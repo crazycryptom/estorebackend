@@ -5,11 +5,7 @@ use crate::{
     prisma::{self, user, PrismaClient},
     RoleType,
 }; // Adjust based on your actual imports
-use actix_web::{
-    dev::Response,
-    web::{self, Json},
-    HttpMessage, HttpRequest, HttpResponse, Responder,
-};
+use actix_web::{web, HttpMessage, HttpRequest, HttpResponse, Responder};
 use serde_json::json;
 use std::{any::Any, sync::Arc};
 
@@ -146,9 +142,7 @@ pub async fn delete_user(
                 .await;
 
             match deleted_user {
-                Ok(_) => {
-                    HttpResponse::Ok().json(json!({"message": "User deleted successfully"}))
-                }
+                Ok(_) => HttpResponse::Ok().json(json!({"message": "User deleted successfully"})),
                 Err(_) => {
                     HttpResponse::InternalServerError().json(json!({"error": "Database error"}))
                 }
@@ -234,7 +228,7 @@ pub async fn update_product(
     req: HttpRequest,
     prisma_client: web::Data<Arc<PrismaClient>>,
     product_id: web::Path<String>,
-    payload: web::Json<ProductPayload>
+    payload: web::Json<ProductPayload>,
 ) -> impl Responder {
     if let Some(claims) = req.extensions().get::<Claims>() {
         if claims.is_admin {
@@ -292,6 +286,42 @@ pub async fn update_product(
                         Err(_) => HttpResponse::InternalServerError()
                             .json(json!({"error": "Could not fetch updated product."})),
                     }
+                }
+                Err(_) => HttpResponse::BadRequest().json(json!({"error": "Invalid input data."})),
+            }
+        } else {
+            HttpResponse::Unauthorized().json(json!({"error": "Unauthorized."}))
+        }
+    } else {
+        HttpResponse::Unauthorized().json(json!({"error": "Unauthorized."}))
+    }
+}
+
+pub async fn create_category(
+    req: HttpRequest,
+    prisma_client: web::Data<Arc<PrismaClient>>,
+    payload: web::Json<CategoryPayload>,
+) -> impl Responder {
+    if let Some(claims) = req.extensions().get::<Claims>() {
+        if claims.is_admin {
+            let new_category_result = prisma_client
+                .category()
+                .create(
+                    payload.name.clone(),
+                    payload.description.clone(),
+                    vec![],
+                )
+                .exec()
+                .await;
+
+            match new_category_result {
+                Ok(category) => {
+                    let response = CategoryResponse {
+                        id: category.id.clone(),
+                        name: category.name.clone(),
+                        description: category.description.clone(),
+                    };
+                    HttpResponse::Created().json(response)
                 }
                 Err(_) => HttpResponse::BadRequest().json(json!({"error": "Invalid input data."})),
             }

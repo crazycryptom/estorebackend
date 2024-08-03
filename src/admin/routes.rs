@@ -22,4 +22,8 @@ pub fn admin_routes(cfg: &mut web::ServiceConfig) {
         web::resource("/products/{product_id}")
         .route(web::put().to(update_product))
     );
+    cfg.service(
+        web::resource("/categories")
+        .route(web::post().to(create_category))
+    );
 }
