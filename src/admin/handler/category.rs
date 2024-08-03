@@ -1,13 +1,10 @@
 use crate::admin::model::*;
-use crate::auth::model::{Claims, UserResponse};
+use crate::auth::model::Claims;
+use crate::prisma::PrismaClient; // Adjust based on your actual imports
 use crate::prisma::*;
-use crate::{
-    prisma::{self, user, PrismaClient},
-    RoleType,
-}; // Adjust based on your actual imports
 use actix_web::{web, HttpMessage, HttpRequest, HttpResponse, Responder};
 use serde_json::json;
-use std::{any::Any, sync::Arc};
+use std::sync::Arc;
 
 pub async fn create_category(
     req: HttpRequest,
@@ -18,11 +15,7 @@ pub async fn create_category(
         if claims.is_admin {
             let new_category_result = prisma_client
                 .category()
-                .create(
-                    payload.name.clone(),
-                    payload.description.clone(),
-                    vec![],
-                )
+                .create(payload.name.clone(), payload.description.clone(), vec![])
                 .exec()
                 .await;
 
@@ -100,7 +93,9 @@ pub async fn delete_category(
                 .await;
 
             match delete_result {
-                Ok(_) => HttpResponse::Ok().json(json!({"message": "Category deleted successfully"})),
+                Ok(_) => {
+                    HttpResponse::Ok().json(json!({"message": "Category deleted successfully"}))
+                }
                 Err(_) => HttpResponse::NotFound().json(json!({"error": "Category not found"})),
             }
         } else {

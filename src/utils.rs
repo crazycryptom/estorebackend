@@ -4,43 +4,21 @@ use std::{
 };
 use actix_web::{
     body::EitherBody,
-    dev::{forward_ready, Response, Service, ServiceRequest, ServiceResponse, Transform},
+    dev::{forward_ready,Service, ServiceRequest, ServiceResponse, Transform},
     http::header::AUTHORIZATION,
     Error, HttpMessage, HttpResponse,
 };
 use chrono::Utc;
-use futures_util::{future::LocalBoxFuture};
+use futures_util::future::LocalBoxFuture;
 use dotenv::dotenv;
 use std::env;
-use jsonwebtoken::{decode, DecodingKey, TokenData, Validation, Algorithm, errors::ErrorKind};
+use jsonwebtoken::{decode, DecodingKey, Validation, Algorithm };
 use super::auth::model::Claims;
-use crate::prisma::*;
 
 pub fn get_secret_key() -> String {
     dotenv().ok();
     env::var("JWT_SECRET")
         .expect("SECRET_KEY must be set")
-}
-
-pub fn decode_jwt(token: &str, secret: &str) -> Result<TokenData<Claims>, jsonwebtoken::errors::Error> {
-    let validation = Validation::new(Algorithm::HS256);
-    let token_data = decode::<Claims>(
-        token,
-        &DecodingKey::from_secret(secret.as_ref()),
-        &validation,
-    );
-
-    match token_data {
-        Ok(data) => {
-            let now = chrono::Utc::now().timestamp() as usize;
-            if data.claims.exp < now {
-                Err(jsonwebtoken::errors::Error::from(ErrorKind::ExpiredSignature))
-            } else {
-                Ok(data)
-            }
-        }
-        Err(err) => Err(err),
-    }
 }
 
 pub struct Authentication;

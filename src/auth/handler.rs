@@ -150,7 +150,7 @@ pub async fn update_profile(
             .exec()
             .await
         {
-            Ok(Some(user)) => {
+            Ok(Some(_)) => {
                 match prisma_client
                     .user()
                     .update(
@@ -200,7 +200,7 @@ pub async fn recovery_key (
             .exec()
             .await
         {
-            Ok(Some(user)) => {
+            Ok(Some(_)) => {
                 match prisma_client.user().update(
                     user::email::equals(payload.email.clone()),
                     vec![user::key::set(Some(recoverykey))]
@@ -234,7 +234,7 @@ pub async fn reset_password (
         .exec()
         .await
     {
-        Ok(Some(user)) => {
+        Ok(Some(_)) => {
             let hashed_password = match hash(payload.newpassword.clone(), DEFAULT_COST) {
                 Ok(p) => p,
                 Err(_) => return HttpResponse::InternalServerError().json(json!({"error": "Failed to hash password"})),
@@ -246,7 +246,7 @@ pub async fn reset_password (
             .exec()
             .await
             {
-                Ok(updated_user) => HttpResponse::Ok().json(json!({"message": "Password reset successfully"})),
+                Ok(_) => HttpResponse::Ok().json(json!({"message": "Password reset successfully"})),
                 Err(_) => HttpResponse::BadRequest().json(json!({"error": "Invalid input data"}))
             }
         },

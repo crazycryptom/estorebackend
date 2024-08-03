@@ -1,13 +1,10 @@
 use crate::admin::model::*;
-use crate::auth::model::{Claims, UserResponse};
+use crate::auth::model::Claims;
+use crate::prisma::PrismaClient; // Adjust based on your actual imports
 use crate::prisma::*;
-use crate::{
-    prisma::{self, user, PrismaClient},
-    RoleType,
-}; // Adjust based on your actual imports
 use actix_web::{web, HttpMessage, HttpRequest, HttpResponse, Responder};
 use serde_json::json;
-use std::{any::Any, sync::Arc};
+use std::sync::Arc;
 
 
 pub async fn create_product(

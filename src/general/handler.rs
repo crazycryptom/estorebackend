@@ -19,7 +19,7 @@ pub async fn get_categories(prisma_client: web::Data<Arc<PrismaClient>>) -> impl
                 .collect::<Vec<_>>();
             HttpResponse::Ok().json(response)
         }
-        Err(e) => HttpResponse::InternalServerError().json(json!({"error": "Database Error"})),
+        Err(_) => HttpResponse::InternalServerError().json(json!({"error": "Database Error"})),
     }
 }
 
@@ -70,9 +70,7 @@ pub async fn get_products(
             price: product.price,
             stock: product.stock,
             imageurl: product.image_url,
-            category: product
-            .categories
-            .map_or(vec![], |cats| {
+            category: product.categories.map_or(vec![], |cats| {
                 cats.into_iter()
                     .map(|cat| cat.name.clone())
                     .collect::<Vec<String>>()

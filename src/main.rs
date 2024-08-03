@@ -6,7 +6,6 @@ mod general;
 
 use actix_cors::Cors;
 use actix_web::{get, web, App, HttpResponse, HttpServer, Responder};
-use log::{debug, error, info, warn};
 use prisma::*;
 use std::sync::Arc;
 use utils::Authentication;
