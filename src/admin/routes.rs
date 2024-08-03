@@ -1,5 +1,5 @@
 use actix_web::web;
-use super::handler::*;
+use super::handler::{user::*, product::*, category::*};
 
 pub fn admin_routes(cfg: &mut web::ServiceConfig) {
     cfg.service(
