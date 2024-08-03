@@ -30,4 +30,8 @@ pub fn admin_routes(cfg: &mut web::ServiceConfig) {
         web::resource("/categories/{category_id}")
         .route(web::put().to(update_category))
     );
+    cfg.service(
+        web::resource("/categories/{category_id}")
+        .route(web::delete().to(delete_category))
+    );
 }

@@ -372,3 +372,29 @@ pub async fn update_category(
         HttpResponse::Unauthorized().json(json!({"error": "Unauthorized"}))
     }
 }
+
+pub async fn delete_category(
+    req: HttpRequest,
+    prisma_client: web::Data<Arc<PrismaClient>>,
+    category_id: web::Path<String>,
+) -> impl Responder {
+    if let Some(claims) = req.extensions().get::<Claims>() {
+        if claims.is_admin {
+            let category_id = category_id.into_inner();
+            let delete_result = prisma_client
+                .category()
+                .delete(category::id::equals(category_id.clone()))
+                .exec()
+                .await;
+
+            match delete_result {
+                Ok(_) => HttpResponse::Ok().json(json!({"message": "Category deleted successfully"})),
+                Err(_) => HttpResponse::NotFound().json(json!({"error": "Category not found"})),
+            }
+        } else {
+            HttpResponse::Unauthorized().json(json!({"error": "Unauthorized"}))
+        }
+    } else {
+        HttpResponse::Unauthorized().json(json!({"error": "Unauthorized"}))
+    }
+}
