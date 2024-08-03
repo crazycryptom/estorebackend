@@ -2,6 +2,7 @@ mod admin;
 mod auth;
 mod prisma;
 mod utils;
+mod general;
 
 use actix_cors::Cors;
 use actix_web::{get, web, App, HttpResponse, HttpServer, Responder};
@@ -31,6 +32,10 @@ async fn main() -> std::io::Result<()> {
                     .wrap(Authentication)
                     // .wrap(Authorization)
                     .configure(admin::routes::admin_routes),
+            )
+            .service(
+                web::scope("api")
+                .configure(general::routes::general_routes)
             )
     })
     .bind("127.0.0.1:8080")?
