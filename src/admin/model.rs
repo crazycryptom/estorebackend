@@ -8,6 +8,16 @@ pub struct PaginationQuery {
     pub limit: Option<i64>,
     pub search: Option<String>,
 }
+#[derive(Debug, Deserialize)]
+pub struct GetProductsPagniationQuery {
+    #[serde(default = "default_page")]
+    pub page: Option<i64>,
+    #[serde(default = "default_limit")]
+    pub limit: Option<i64>,
+    pub category: Option<String>,
+    pub id: Option<String>,
+}
+
 #[derive(Deserialize)]
 pub struct RolePayload {
     pub role: String,

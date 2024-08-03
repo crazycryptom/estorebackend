@@ -1,13 +1,12 @@
 use crate::admin::model::*;
 use crate::auth::model::{Claims, UserResponse};
-use crate::prisma::*;
 use crate::{
-    prisma::{self, user, PrismaClient},
+    prisma::{user, PrismaClient},
     RoleType,
 }; // Adjust based on your actual imports
 use actix_web::{web, HttpMessage, HttpRequest, HttpResponse, Responder};
 use serde_json::json;
-use std::{any::Any, sync::Arc};
+use std::sync::Arc;
 
 pub async fn get_users(
     req: HttpRequest,
@@ -32,7 +31,6 @@ pub async fn get_users(
                     let total_items = prisma_client.user().count(vec![]).exec().await.unwrap_or(0);
 
                     let total_pages = (total_items as f64 / limit as f64).ceil() as i64;
-                    println!("authorized user call get user request");
 
                     let users = prisma_client
                         .user()
@@ -40,8 +38,8 @@ pub async fn get_users(
                             user::display_name::contains(search.to_string()),
                             user::email::contains(search.to_string()),
                         ])
-                        .take(limit)
                         .skip((page - 1) * limit as i64)
+                        .take(limit)
                         .exec()
                         .await
                         .unwrap_or_default();
