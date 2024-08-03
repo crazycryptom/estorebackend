@@ -332,3 +332,43 @@ pub async fn create_category(
         HttpResponse::Unauthorized().json(json!({"error": "Unauthorized."}))
     }
 }
+
+pub async fn update_category(
+    req: HttpRequest,
+    prisma_client: web::Data<Arc<PrismaClient>>,
+    category_id: web::Path<String>,
+    payload: web::Json<CategoryPayload>,
+) -> impl Responder {
+    if let Some(claims) = req.extensions().get::<Claims>() {
+        if claims.is_admin {
+            let category_id = category_id.into_inner();
+            let update_result = prisma_client
+                .category()
+                .update(
+                    category::id::equals(category_id.clone()),
+                    vec![
+                        category::name::set(payload.name.clone()),
+                        category::description::set(payload.description.clone()),
+                    ],
+                )
+                .exec()
+                .await;
+
+            match update_result {
+                Ok(category) => {
+                    let response = CategoryResponse {
+                        id: category.id.clone(),
+                        name: category.name.clone(),
+                        description: category.description.clone(),
+                    };
+                    HttpResponse::Ok().json(response)
+                }
+                Err(_) => HttpResponse::NotFound().json(json!({"error": "Category not found"})),
+            }
+        } else {
+            HttpResponse::Unauthorized().json(json!({"error": "Unauthorized"}))
+        }
+    } else {
+        HttpResponse::Unauthorized().json(json!({"error": "Unauthorized"}))
+    }
+}
