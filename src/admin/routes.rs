@@ -1,5 +1,5 @@
 use actix_web::web;
-use super::handler::{user::*, product::*, category::*};
+use super::handler::{user::*, product::*, category::*, order::*};
 
 pub fn admin_routes(cfg: &mut web::ServiceConfig) {
     cfg.service(
@@ -33,5 +33,9 @@ pub fn admin_routes(cfg: &mut web::ServiceConfig) {
     cfg.service(
         web::resource("/categories/{category_id}")
         .route(web::delete().to(delete_category))
+    );
+    cfg.service(
+        web::resource("/orders/{order_id}")
+        .route(web::put().to(approve_order))
     );
 }
