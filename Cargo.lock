@@ -443,6 +443,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4cbbc9d0964165b47557570cce6c952866c2678457aca742aafc9fb771d30270"
 
 [[package]]
+name = "base32"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "23ce669cd6c8588f79e15cf450314f9638f967fc5770ff1c7c1deb0925ea7cfa"
+
+[[package]]
+name = "base32"
+version = "0.5.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "022dfe9eb35f19ebbcb51e0b40a5ab759f46ad60cadf7297e0bd085afb50e076"
+
+[[package]]
 name = "base36"
 version = "0.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -821,6 +833,12 @@ name = "connection-string"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "510ca239cf13b7f8d16a2b48f263de7b4f8c566f0af58d901031473c76afb1e3"
+
+[[package]]
+name = "constant_time_eq"
+version = "0.2.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "21a53c0a4d288377e7415b53dcfc3c04da5cdc2cc95c8d5ac178b58f0b861ad6"
 
 [[package]]
 name = "convert_case"
@@ -1335,6 +1353,7 @@ dependencies = [
  "actix-cors",
  "actix-web",
  "actix-web-lab",
+ "base32 0.5.1",
  "bcrypt",
  "chrono",
  "dotenv",
@@ -1345,9 +1364,11 @@ dependencies = [
  "postgres",
  "prisma-client-rust",
  "prisma-client-rust-cli",
+ "rand 0.8.5",
  "serde",
  "serde_json",
  "tokio",
+ "totp-rs",
  "uuid",
 ]
 
@@ -5014,6 +5035,19 @@ dependencies = [
  "indexmap 2.2.6",
  "toml_datetime",
  "winnow",
+]
+
+[[package]]
+name = "totp-rs"
+version = "5.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "17b2f27dad992486c26b4e7455f38aa487e838d6d61b57e72906ee2b8c287a90"
+dependencies = [
+ "base32 0.4.0",
+ "constant_time_eq",
+ "hmac",
+ "sha1",
+ "sha2 0.10.8",
 ]
 
 [[package]]

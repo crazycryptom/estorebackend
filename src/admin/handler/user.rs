@@ -111,6 +111,10 @@ pub async fn update_user_role(
                             RoleType::Admin => String::from("admin"),
                             _ => String::from("client"),
                         },
+                        otp_enabled: user.otp_enabled,
+                        otp_verified: user.otp_verified,
+                        otp_auth_url: user.otp_auth_url.to_owned(),
+                        otp_base32: user.opt_base_32.to_owned(),
                     };
                     HttpResponse::Ok().json(response)
                 }

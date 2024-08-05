@@ -18,6 +18,10 @@ pub struct UserResponse {
     pub first_name: String,
     pub last_name: String,
     pub role: String,
+    pub otp_enabled: bool,
+    pub otp_verified: bool,
+    pub otp_base32: Option<String>,
+    pub otp_auth_url: Option<String>
 }
 
 #[derive(Deserialize)]
@@ -58,4 +62,9 @@ pub struct ResetPasswordPayload {
     pub recoverykey: String,
     pub email: String,
     pub newpassword: String,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct VerifyOTPSchema {
+    pub token: String,
 }

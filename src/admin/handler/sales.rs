@@ -1,6 +1,6 @@
 use crate::admin::model::*;
 use crate::auth::model::Claims;
-use crate::prisma::PrismaClient; // Adjust based on your actual imports
+use crate::prisma::PrismaClient;
 use crate::prisma::*;
 use actix_web::{web, HttpMessage, HttpRequest, HttpResponse, Responder};
 use chrono::{DateTime, FixedOffset, NaiveDate, TimeZone, Utc};
@@ -13,12 +13,10 @@ pub async fn sales_result(
     query: web::Query<SalesQuery>,
 ) -> impl Responder {
     if let Some(claims) = req.extensions().get::<Claims>() {
-        // Verify user authorization, assuming only admins can access sales data
         if !claims.is_admin {
             return HttpResponse::Unauthorized().json(json!({"error": "Unauthorized"}));
         }
 
-        // Parse query parameters
         let start_date = query
             .start_date
             .as_ref()
@@ -39,7 +37,6 @@ pub async fn sales_result(
             .unwrap()
             .from_local_datetime(&end_date.and_hms_opt(23, 59, 59).unwrap())
             .unwrap();
-        // Fetch approved orders within the date range
         match prisma_client
             .order()
             .find_many(vec![
@@ -52,7 +49,6 @@ pub async fn sales_result(
             .await
         {
             Ok(orders) => {
-                // Calculate sales amount for each product
                 let mut product_sales: std::collections::HashMap<String, f64> =
                     std::collections::HashMap::new();
 
@@ -68,7 +64,6 @@ pub async fn sales_result(
                     }
                 }
 
-                // Fetch product details and calculate response
                 let mut sales_response = vec![];
 
                 for (product_id, sales_amount) in product_sales {

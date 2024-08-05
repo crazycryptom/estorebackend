@@ -30,4 +30,24 @@ pub fn auth_routes(cfg: &mut web::ServiceConfig) {
         web::resource("/reset-password")
         .route(web::post().to(reset_password))
     );
+    cfg.service(
+        web::resource("/otp/validate")
+        .route(web::post().to(validate_otp))
+    );
+    cfg.service(
+        web::resource("/otp/verify")
+        .wrap(Authentication)
+        .route(web::post().to(verify_otp))
+    );
+    cfg.service(
+        web::resource("/otp/disable")
+        .wrap(Authentication)
+        .route(web::post().to(disable_otp))
+    );
+    cfg.service(
+        web::resource("/otp/generate")
+        .wrap(Authentication)
+        .route(web::post().to(generate_otp))
+    );
+
 }
