@@ -1,4 +1,6 @@
 use actix_web::web;
+use crate::utils::Authentication;
+
 use super::handler::*;
 
 pub fn general_routes(cfg: &mut web::ServiceConfig) {
@@ -10,4 +12,9 @@ pub fn general_routes(cfg: &mut web::ServiceConfig) {
         web::resource("/categories")
         .route(web::get().to(get_categories))
     );
+    // cfg.service(
+    //     web::resource("/orders")
+    //     .wrap(Authentication)
+    //     .route(web::get().to(get_orders))
+    // );
 }
