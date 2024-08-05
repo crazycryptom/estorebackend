@@ -45,7 +45,7 @@ pub struct ProductResponse {
 }
 
 #[derive(Deserialize)]
-pub struct CategoryPayload{
+pub struct CategoryPayload {
     pub name: String,
     pub description: String,
 }
@@ -55,6 +55,12 @@ pub struct CategoryResponse {
     pub id: String,
     pub name: String,
     pub description: String,
+}
+
+#[derive(Deserialize)]
+pub struct SalesQuery {
+    pub start_date: Option<String>,
+    pub end_date: Option<String>,
 }
 
 fn default_page() -> Option<i64> {
