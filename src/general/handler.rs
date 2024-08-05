@@ -1,7 +1,6 @@
 use crate::admin::model::{CategoryResponse, GetProductsPagniationQuery, ProductResponse};
-use crate::{prisma::PrismaClient, product, order};
-use crate::auth::model::Claims;
-use actix_web::{web, HttpMessage, HttpRequest, HttpResponse, Responder};
+use crate::{prisma::PrismaClient, product};
+use actix_web::{web, HttpResponse, Responder};
 use serde_json::json;
 use std::sync::Arc;
 
@@ -20,7 +19,7 @@ pub async fn get_categories(prisma_client: web::Data<Arc<PrismaClient>>) -> impl
                 .collect::<Vec<_>>();
             HttpResponse::Ok().json(response)
         }
-        Err(e) => HttpResponse::InternalServerError().json(json!({"error": "Database Error"})),
+        Err(_) => HttpResponse::InternalServerError().json(json!({"error": "Database Error"})),
     }
 }
 
@@ -92,33 +91,4 @@ pub async fn get_products(
     HttpResponse::Ok().json(response)
 }
 
-// pub async fn get_orders(
-//     req: HttpRequest,
-//     prisma_client: web::Data<Arc<PrismaClient>>,
-//     client_id: web::Path<String>,
-// ) -> impl Responder {
-//     if let Some(claims) = req.extensions().get::<Claims>() {
-//         let filter = if claims.is_admin {
-//             // Admin case: filter by client_id if provided
-//             if !client_id.is_empty() {
-//                 vec![order::user_id::equals(client_id.clone())]
-//             } else {
-//                 vec![]
-//             }
-//         } else {
-//             // Regular user case: filter by the user's own ID
-//             vec![order::user_id::equals(claims.sub.clone())]
-//         };
-//         match prisma_client
-//             .order()
-//             .find_many(filter)
-//             .exec()
-//             .await
-//         {
-//             Ok(orders) => HttpResponse::Ok().json(orders),
-//             Err(err) => HttpResponse::InternalServerError().json(json!({"error": format!("Failed to fetch orders: {:?}", err)})),
-//         }
-//     } else {
-//         HttpResponse::Unauthorized().json(json!({"error": "Unauthorized"}))
-//     }
-// }
+
